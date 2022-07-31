@@ -40,3 +40,63 @@ export function statsMessageFormatter(matches: MatchStats[]) {
     todaysKda.deaths / matchesCount
   ).toFixed(2)}/${(todaysKda.assists / matchesCount).toFixed(2)}`;
 }
+
+export function parseStreamUptimeString(streamUptimeString: string): {
+  hours: number;
+  minutes: number;
+  seconds: number;
+} {
+  let hoursValue = 0;
+  let minutesValue = 0;
+  let secondsValue = 0;
+  const hoursExpressions = ["hours", "hour"];
+  const minutesExpressions = ["mins", "min"];
+  const secondsExpressions = ["secs", "sec"];
+  const keyStreamUptimeStringExpressions = [
+    ...hoursExpressions,
+    ...minutesExpressions,
+    ...secondsExpressions,
+  ];
+  // check if streamUptimeString includes at least one of the key expressions;
+  const isValidStreamUptimeString = keyStreamUptimeStringExpressions.some(
+    (el) => streamUptimeString.includes(el)
+  );
+  if (!isValidStreamUptimeString) {
+    throw new Error("Invalid stream uptime");
+  }
+
+  const splitStreamUptimeString = streamUptimeString.split(" ");
+
+  // Hours
+  const hoursExpressionIndex = splitStreamUptimeString.findIndex((el) =>
+    hoursExpressions.some((expression) => expression === el)
+  );
+  if (hoursExpressionIndex >= 0) {
+    hoursValue = Number(splitStreamUptimeString[hoursExpressionIndex - 1] ?? 0);
+  }
+
+  // Minutes
+  const minutesExpressionIndex = splitStreamUptimeString.findIndex((el) =>
+    minutesExpressions.some((expression) => expression === el)
+  );
+  if (minutesExpressionIndex >= 0) {
+    minutesValue = Number(
+      splitStreamUptimeString[minutesExpressionIndex - 1] ?? 0
+    );
+  }
+  // Seconds
+  const secondsExpressionIndex = splitStreamUptimeString.findIndex((el) =>
+    secondsExpressions.some((expression) => expression === el)
+  );
+  if (secondsExpressionIndex >= 0) {
+    secondsValue = Number(
+      splitStreamUptimeString[secondsExpressionIndex - 1] ?? 0
+    );
+  }
+
+  return {
+    hours: hoursValue,
+    minutes: minutesValue,
+    seconds: secondsValue,
+  };
+}

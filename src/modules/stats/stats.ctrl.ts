@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import subHours from "date-fns/subHours";
 import subMinutes from "date-fns/subMinutes";
 import getUnixTime from "date-fns/getUnixTime";
+import { subSeconds } from "date-fns";
 import {
   getMatchInfo,
   getSummonerData,
@@ -10,7 +11,7 @@ import {
 import { PLATFORM, QUEUE_ID } from "../../lib/riotApi/types";
 import { createSummonerToPlatformMap, toArray } from "../utils";
 import { MatchStats } from "./types";
-import { statsMessageFormatter } from "./utils";
+import { parseStreamUptimeString, statsMessageFormatter } from "./utils";
 
 interface StatsRouteQuerystring {
   "summoner-name": string | string[];
@@ -50,22 +51,17 @@ const registerStatsController = (app: FastifyInstance) => () => {
         throw new Error("Invalid params");
       }
 
-      // Check if stream uptme is valid
-      if (
-        !streamUptime.match(
-          /\s[0-9][0-9]\s\b(hours?)\b\s[0-9][0-9]\s\b(mins?)\b/
-        )
-      ) {
-        return reply.status(200).send("Nie zostały rozegrane żadne mecze.");
-      }
-      // Determine time range for matches
-      const streamUptimeSplitArr = streamUptime.split(" ");
+      const streamUptimeValues = parseStreamUptimeString(streamUptime);
 
-      const hours = Number(streamUptimeSplitArr[1]);
-      const minutes = Number(streamUptimeSplitArr[3]);
       const endTime = Date.now();
       const startTime = getUnixTime(
-        subMinutes(subHours(endTime, hours), minutes)
+        subSeconds(
+          subMinutes(
+            subHours(endTime, streamUptimeValues.hours),
+            streamUptimeValues.minutes
+          ),
+          streamUptimeValues.seconds
+        )
       );
 
       // Get an array of arrays of summoner's matches
@@ -140,6 +136,10 @@ const registerStatsController = (app: FastifyInstance) => () => {
 
       // Flatten nested match arrays
       const allSummonersMatchesStats = summonerMatchStatsArrays.flat(2);
+
+      if (allSummonersMatchesStats.length <= 0) {
+        return reply.status(200).send("Nie zostały rozegrane żadne mecze.");
+      }
 
       const formattedMessage = statsMessageFormatter(allSummonersMatchesStats);
 
