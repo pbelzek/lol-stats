@@ -141,7 +141,9 @@ const registerStatsController = (app: FastifyInstance) => () => {
         return reply.status(200).send("Nie zostały rozegrane żadne mecze.");
       }
 
-      const formattedMessage = statsMessageFormatter(allSummonersMatchesStats);
+      const formattedMessage = statsMessageFormatter(
+        allSummonersMatchesStats.reverse()
+      );
 
       return reply.status(200).send(formattedMessage);
     },
