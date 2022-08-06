@@ -34,7 +34,7 @@ export function statsMessageFormatter(matches: MatchStats[]) {
     "; "
   )}. Dzisiejsze KDA: ${todaysKda.kills}/${todaysKda.deaths}/${
     todaysKda.assists
-  } (${((todaysKda.kills + todaysKda.assists) / todaysKda.kills).toFixed(
+  } (${((todaysKda.kills + todaysKda.assists) / todaysKda.deaths).toFixed(
     2
   )}). Średnie KDA: ${(todaysKda.kills / matchesCount).toFixed(2)}/${(
     todaysKda.deaths / matchesCount
