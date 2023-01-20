@@ -63,14 +63,16 @@ const registerRankController = (app: FastifyInstance) => () => {
               return prev;
             }
           }
+          return prev;
         }, [])
         ?.map((league) => ({
           ...league,
           platform: summonerNamePlatformMap[league.summonerName] as PLATFORM,
         }));
       if (rankedLeagues) {
-        reply.status(200).send(rankMessageFormatter(rankedLeagues));
+        return reply.status(200).send(rankMessageFormatter(rankedLeagues));
       }
+      return reply.status(200).send("");
     },
   });
 };
